@@ -20,9 +20,10 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from databricks_langchain import ChatDatabricks
 
-# Hosted by Databricks, nothing to deploy. Free Edition lists these in Playground > Select an endpoint;
-# the serving name is the "databricks-" form of the model id (Playground > Get code shows it).
-ENDPOINT = "databricks-gpt-oss-120b"        # Playground: system.ai.gpt-oss-120b
+# Hosted by Databricks, nothing to deploy. Free Edition lists these in Playground > Select an endpoint
+# (shown there as system.ai.llama-4-maverick; the serving name is the "databricks-" form).
+# A plain chat model: reasoning models such as GPT OSS return reasoning blocks that StrOutputParser cannot flatten.
+ENDPOINT = "databricks-llama-4-maverick"
 
 prompt = PromptTemplate.from_template("Answer in one sentence: {question}")
 llm    = ChatDatabricks(endpoint=ENDPOINT, temperature=0)

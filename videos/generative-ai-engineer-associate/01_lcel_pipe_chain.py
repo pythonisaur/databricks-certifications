@@ -55,7 +55,7 @@ except ImportError:
     from langchain_classic.chains import LLMChain  # langchain >= 1.0
 
 legacy = LLMChain(prompt=prompt, llm=llm)
-legacy.invoke({"question": "What is Delta Lake?"})
+legacy.invoke({"question": "What is Delta Lake? "})
 
 # COMMAND ----------
 

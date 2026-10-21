@@ -20,8 +20,12 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from databricks_langchain import ChatDatabricks
 
+# Hosted by Databricks, nothing to deploy. Free Edition lists these in Playground > Select an endpoint;
+# the serving name is the "databricks-" form of the model id (Playground > Get code shows it).
+ENDPOINT = "databricks-gpt-oss-120b"        # Playground: system.ai.gpt-oss-120b
+
 prompt = PromptTemplate.from_template("Answer in one sentence: {question}")
-llm    = ChatDatabricks(endpoint="databricks-meta-llama-3-3-70b-instruct", temperature=0)
+llm    = ChatDatabricks(endpoint=ENDPOINT, temperature=0)
 parser = StrOutputParser()
 
 # COMMAND ----------
@@ -36,7 +40,7 @@ except Exception as e:
 
 # Option B: the pipe
 chain = prompt | llm | parser
-chain.invoke({"question": "What does the pipe operator do in LCEL?"})
+chain.invoke({"question": "What does the pipe operator do in LangChain Expression Language (LCEL)?"})
 
 # COMMAND ----------
 
@@ -55,7 +59,7 @@ except ImportError:
     from langchain_classic.chains import LLMChain  # langchain >= 1.0
 
 legacy = LLMChain(prompt=prompt, llm=llm)
-legacy.invoke({"question": "What is Delta Lake? "})
+legacy.invoke({"question": "What is Delta Lake?"})
 
 # COMMAND ----------
 
@@ -69,5 +73,5 @@ except Exception as e:
 
 # Only the LCEL chain gives you stream and batch for free
 chain = prompt | llm | parser
-for chunk in chain.stream({"question": "Name one benefit of LCEL."}):
+for chunk in chain.stream({"question": "Name one benefit of LangChain Expression Language (LCEL)."}):
     print(chunk, end="")

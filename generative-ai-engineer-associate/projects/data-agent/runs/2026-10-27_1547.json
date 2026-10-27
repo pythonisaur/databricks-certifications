@@ -1,0 +1,115 @@
+{
+  "02raw": {
+    "run_id": 990967497583500,
+    "result_state": "SUCCESS",
+    "message": "",
+    "error": null,
+    "exit": {
+      "question": "Why did our order volume in Chicago drop last week?",
+      "use_context": false,
+      "answer": "Chicago’s order volume fell from 1,095 orders the week of 2026‑10‑12 to 898 orders the week of 2026‑10‑19—a drop of 197 orders (≈ 18%). The decline lines up with a severe weather event: from Oct 19‑23 the city experienced heavy snow (9–13 inches per day) and temperatures in the 10‑20 °F range, whereas the prior week was clear‑to‑cloudy and above 50 °F.  \n**Evidence:** orders, cities, weather_daily.",
+      "tools_called": [
+        "list_tables",
+        "describe_table",
+        "describe_table",
+        "execute_sql",
+        "execute_sql",
+        "describe_table",
+        "execute_sql",
+        "execute_sql"
+      ],
+      "sql": [
+        "SELECT date_trunc('week', placed_at) AS week_start,\n       COUNT(*) AS orders_cnt\nFROM orders o\nJOIN cities c ON o.city_id = c.city_id\nWHERE c.city = 'Chicago'\n  AND placed_at >= date_sub(date_trunc('week', current_timestamp()), interval 14 days)\nGROUP BY week_start\nORDER BY week_start DESC",
+        "SELECT date_trunc('week', placed_at) AS week_start,\n       COUNT(*) AS orders_cnt\nFROM orders o\nJOIN cities c ON o.city_id = c.city_id\nWHERE c.city = 'Chicago'\n  AND placed_at >= date_trunc('week', current_timestamp()) - interval 14 days\nGROUP BY week_start\nORDER BY week_start DESC",
+        "SELECT city_id FROM cities WHERE city = 'Chicago' LIMIT 1",
+        "SELECT weather_date, condition, temp_f, snow_inches\nFROM weather_daily wd\nWHERE wd.city_id = 2\n  AND weather_date BETWEEN '2026-10-10' AND '2026-10-26'\nORDER BY weather_date"
+      ],
+      "errors": [
+        "error: [DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"date_sub(date_trunc(week, current_timestamp()), INTERVAL '14' DAY)\" due to data type mismatch: The second parameter requires the (\"INT\""
+      ]
+    },
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/1022964835168219/run/990967497583500",
+    "seconds": 42
+  },
+  "02ctx": {
+    "run_id": 270795625970811,
+    "result_state": "SUCCESS",
+    "message": "",
+    "error": null,
+    "exit": {
+      "question": "What was revenue last month?",
+      "use_context": true,
+      "answer": "Last month’s revenue was **$884,732** (subtotal of delivered orders minus refunds).  \n\nEvidence: orders, refunds",
+      "tools_called": [
+        "list_tables",
+        "describe_table",
+        "describe_table",
+        "execute_sql"
+      ],
+      "sql": [
+        "SELECT COALESCE(SUM(o.subtotal),0) - COALESCE(SUM(r.amount),0) AS revenue_last_month\nFROM orders o\nLEFT JOIN refunds r ON o.order_id = r.order_id\nWHERE o.status = 'delivered'\n  AND o.placed_at >= date_trunc('month', add_months(current_date(), -1))\n  AND o.placed_at < date_trunc('month', current_date())"
+      ],
+      "errors": []
+    },
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/292744128306288/run/270795625970811",
+    "seconds": 105
+  },
+  "03": {
+    "run_id": 353569970205432,
+    "result_state": "SUCCESS",
+    "message": "",
+    "error": null,
+    "exit": [
+      {
+        "context": false,
+        "question": "Why did our order volume in Chicago drop last week?",
+        "correct": false,
+        "sql_runs": 5,
+        "retries": 1,
+        "answer": "Chicago’s order volume fell from 1,095 orders last week (starting 2026‑10‑12) to 898 orders this week (starting 2026‑10‑19), a drop of 197 orders (≈‑18%). The same period saw a sharp temperature plunge: average daily temperature fell from ≈ 63 °F to ≈ 30 °F, while rain and snow remained absent. The colder weather likely suppressed demand, as cancellations stayed at zero.\n\n**Evidence:** orders | weather_daily."
+      },
+      {
+        "context": false,
+        "question": "What was revenue last month?",
+        "correct": false,
+        "sql_runs": 2,
+        "retries": 0,
+        "answer": "Revenue for the most recent full month (September 2026) was **$1,092,135**. That is about **5 % lower** than the prior month (August 2026), which generated **$1,157,421**. (Revenue is defined as the sum of the `total` field for orders with `status='delivered'`.)  \n\n**Evidence:** orders."
+      },
+      {
+        "context": false,
+        "question": "How many orders were delivered in September?",
+        "correct": true,
+        "sql_runs": 1,
+        "retries": 0,
+        "answer": "There were **23,330 orders** with a status of “delivered” that were placed in September 2026.\n\nEvidence: orders."
+      },
+      {
+        "context": true,
+        "question": "Why did our order volume in Chicago drop last week?",
+        "correct": true,
+        "sql_runs": 3,
+        "retries": 0,
+        "answer": "Chicago’s order volume fell from 1,095 orders in the week of Oct 12‑18 to 898 orders in the week of Oct 19‑25 – a drop of 197 orders (≈ 18 %). The decline coincides with a sharp rise in cancellations, especially “no_driver_available” (311 cancellations vs 12 the prior week), while weather turned severe (heavy snow, 9‑12 inches, temperatures in the teens‑low‑20s). The heavy snow likely limited driver availability, driving the cancellation surge and the lower order count.  \n\n**Evidence:** orders, weather_daily."
+      },
+      {
+        "context": true,
+        "question": "What was revenue last month?",
+        "correct": false,
+        "sql_runs": 1,
+        "retries": 0,
+        "answer": "Revenue for the previous calendar month was **$884,732**.\n\n**Evidence:** orders, refunds."
+      },
+      {
+        "context": true,
+        "question": "How many orders were delivered in September?",
+        "correct": true,
+        "sql_runs": 1,
+        "retries": 0,
+        "answer": "There were **23,330 orders delivered in September 2026**.\n\n**Evidence:** orders."
+      }
+    ],
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/643064033555281/run/353569970205432",
+    "seconds": 207
+  }
+}

@@ -29,7 +29,7 @@ $1,150,069 if you `SUM(total)` over every row but $884,732 by the business
 definition (delivered subtotal − refunds).
 
 Requirements: a Unity Catalog workspace, a cluster (DBR 15+), and one chat
-endpoint in **Serving** (default widget `databricks-claude-sonnet-4-5`;
+endpoint in **Serving** (default widget `databricks-gpt-oss-120b`;
 any tool-calling endpoint works). `pip install databricks-sdk` is
 preinstalled on DBR.
 
@@ -48,5 +48,23 @@ Two ways to build the warehouse:
    Default-Storage accounts; `CREATE CATALOG` through the warehouse works, and the script falls back to
    `dev_catalog.food_delivery` if even that fails.
 
-Then `01`, `02` (flip the `use_context` widget), `03` for the scorecard. The video series uses `02`/`03` output as
+Then `01`, `02` (flip the `use_context` widget), `03` for the scorecard. From the laptop:
+
+```bash
+databricks workspace import-dir data-agent /Users/byambaa1982@gmail.com/databricks-certifications/genai/projects/data-agent --overwrite
+python run_in_workspace.py --profile lakehouse            # 4 serverless runs: 01, 02 raw, 02 context, 03; exit values -> runs/<ts>.json
+python run_in_workspace.py --only 03                      # just the scorecard
+```
+
+Model: the workspace has no Claude endpoint, so the default is `databricks-gpt-oss-120b` (tool calling verified;
+`databricks-meta-llama-3-3-70b-instruct` also works). It is a reasoning model: its thinking comes back in
+`reasoning_content` and can eat the token budget, so the loop uses `max_tokens=4000`, prints the thinking as the
+PLAN box, and nudges once if a turn comes back empty. The notebooks call the endpoint through
+`WorkspaceClient().api_client.do(...)` because the serverless runtime lacks the `openai` extra.
+
+First real runs (2026-10-27, `runs/2026-10-27_1547.json`): chatbot = 0 tables, generic checklist. Agent, raw tables:
+Chicago 1,095 -> 898 orders, heavy snow found in `weather_daily` (one run also found the 311 `no_driver_available`
+cancellations, one blamed temperature only); revenue answered **$1,092,135** (delivered `total`, tax and tips
+included) = wrong. Agent with context: Chicago snow + no-driver cancellations, revenue **$884,732** = right. One SQL
+error (`date_sub` with an interval) was retried and fixed by the model on its own. The video series uses `02`/`03` output as
 the screen recordings.

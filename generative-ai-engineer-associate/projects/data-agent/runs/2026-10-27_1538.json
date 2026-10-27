@@ -1,0 +1,38 @@
+{
+  "01": {
+    "run_id": 782997987103273,
+    "result_state": "FAILED",
+    "message": "Task 01 failed with message: Workload failed, see run output for details.",
+    "error": "ImportError: Open AI is not installed. Please install the Databricks SDK with the following command `pip install databricks-sdk[openai]`",
+    "exit": null,
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/1123675789490363/run/782997987103273",
+    "seconds": 42
+  },
+  "02raw": {
+    "run_id": 2756800013438,
+    "result_state": "FAILED",
+    "message": "Task 02raw failed with message: Workload failed, see run output for details.",
+    "error": "ImportError: Open AI is not installed. Please install the Databricks SDK with the following command `pip install databricks-sdk[openai]`",
+    "exit": null,
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/863299954063250/run/2756800013438",
+    "seconds": 127
+  },
+  "02ctx": {
+    "run_id": 299790664222813,
+    "result_state": "FAILED",
+    "message": "Task 02ctx failed with message: Workload failed, see run output for details.",
+    "error": "ImportError: Open AI is not installed. Please install the Databricks SDK with the following command `pip install databricks-sdk[openai]`",
+    "exit": null,
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/337609708416938/run/299790664222813",
+    "seconds": 190
+  },
+  "03": {
+    "run_id": 683340129352466,
+    "result_state": "FAILED",
+    "message": "Task 03 failed with message: Workload failed, see run output for details.",
+    "error": "ImportError: Open AI is not installed. Please install the Databricks SDK with the following command `pip install databricks-sdk[openai]`",
+    "exit": null,
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/653975732038500/run/683340129352466",
+    "seconds": 255
+  }
+}

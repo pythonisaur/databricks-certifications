@@ -1,0 +1,60 @@
+{
+  "03": {
+    "run_id": 161623523423665,
+    "result_state": "SUCCESS",
+    "message": "",
+    "error": null,
+    "exit": [
+      {
+        "context": false,
+        "question": "Why did our order volume in Chicago drop last week?",
+        "correct": false,
+        "sql_runs": 3,
+        "retries": 1,
+        "answer": "Chicago saw 898 orders in the week of 2026‑10‑19, down from 1,095 the week before – an ≈ 18 % decline. That week the city experienced a sharp cold snap (average 30 °F) and a heavy snowstorm (≈ 48 in of snow), whereas the prior week was milder (≈ 63 °F) and snow‑free. The severe weather likely suppressed order volume.  \n\n**Evidence:** orders, cities, weather_daily."
+      },
+      {
+        "context": false,
+        "question": "What was revenue last month?",
+        "correct": false,
+        "sql_runs": 3,
+        "retries": 0,
+        "answer": "Revenue for September 2026 (the most recent full month) was **$1,092,135.34**, based on the sum of `total` for orders with status ‘delivered’. For comparison, August 2026 revenue was about **$1,157,421**, showing a slight decline month‑over‑month.\n\nEvidence: **orders** table."
+      },
+      {
+        "context": false,
+        "question": "How many orders were delivered in September?",
+        "correct": true,
+        "sql_runs": 1,
+        "retries": 0,
+        "answer": "In September 2026 there were **23,330** orders with a status of “delivered.”  \n\nEvidence: orders."
+      },
+      {
+        "context": true,
+        "question": "Why did our order volume in Chicago drop last week?",
+        "correct": false,
+        "sql_runs": 2,
+        "retries": 0,
+        "answer": "Chicago’s order volume fell from 1,095 orders last week to 898 orders this week – a drop of 197 orders (about 18 %). The main driver was a surge in cancellations, which jumped from 47 to 336 cancellations, 311 of which were due to no_driver_available. In short, fewer orders were completed because many were cancelled when drivers weren’t available.  \n\n**Evidence:** orders, cities."
+      },
+      {
+        "context": true,
+        "question": "What was revenue last month?",
+        "correct": true,
+        "sql_runs": 2,
+        "retries": 0,
+        "answer": "Revenue for the most recent full calendar month was **$884,731.90**.\n\nEvidence: orders, refunds."
+      },
+      {
+        "context": true,
+        "question": "How many orders were delivered in September?",
+        "correct": true,
+        "sql_runs": 1,
+        "retries": 0,
+        "answer": "There were **23,330** orders delivered in September 2026.\n\n**Evidence:** orders."
+      }
+    ],
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/740321422719944/run/161623523423665",
+    "seconds": 123
+  }
+}

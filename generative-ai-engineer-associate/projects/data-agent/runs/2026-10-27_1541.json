@@ -1,0 +1,90 @@
+{
+  "01": {
+    "run_id": 654567513605984,
+    "result_state": "SUCCESS",
+    "message": "",
+    "error": null,
+    "exit": {
+      "question": "Why did our order volume in Chicago drop last week?",
+      "answer": "**Quick Take:**  \nA dip in order volume for a single market (Chicago) can be caused by a mix of supply‑side, demand‑side, and external factors. Since we don’t have the raw data in front of us, the safest first step is to run a focused diagnostic that isolates the most common drivers of week‑over‑week variation.\n\nBelow is a practical, data‑driven checklist you can follow today, plus the key questions to ask the teams that own the underlying data sources.\n\n---\n\n## 1. Quantify the Drop\n| Metric | How to Pull | What to Compare |\n|--------|-------------|-----------------|\n| **Total orders** (weekly) | Order‑DB → `orders` table, filter `city='Chicago'` and `order_date` between last‑Mon and Sun | Same week last month, same week YoY |\n| **Orders per active user",
+      "tables_looked_at": 0
+    },
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/359668176713054/run/654567513605984",
+    "seconds": 21
+  },
+  "02raw": {
+    "run_id": 726001928993314,
+    "result_state": "SUCCESS",
+    "message": "",
+    "error": null,
+    "exit": {
+      "question": "Why did our order volume in Chicago drop last week?",
+      "use_context": false,
+      "answer": "",
+      "tools_called": [
+        "list_tables",
+        "describe_table",
+        "describe_table"
+      ],
+      "sql": [],
+      "errors": []
+    },
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/718193060866646/run/726001928993314",
+    "seconds": 87
+  },
+  "03": {
+    "run_id": 948478237975997,
+    "result_state": "SUCCESS",
+    "message": "",
+    "error": null,
+    "exit": {
+      "question": "Why did our order volume in Chicago drop last week?",
+      "use_context": false,
+      "answer": "Chicago saw about a 18 % drop in orders last week (898 vs 1,095 the week before).  The drop is almost entirely driven by a surge in cancellations – they rose from 47 to 336 orders, and 311 of those recent cancellations cite “no_driver_available” (versus only 12 a week earlier).  Restaurant coverage and weather were unchanged, so the likely cause is a driver‑availability issue.  \n\n**Evidence:** orders, cities (for Chicago filter), cancel_reason (from orders).",
+      "tools_called": [
+        "list_tables",
+        "describe_table",
+        "describe_table",
+        "execute_sql",
+        "describe_table",
+        "execute_sql",
+        "execute_sql",
+        "execute_sql",
+        "execute_sql",
+        "execute_sql",
+        "execute_sql"
+      ],
+      "sql": [
+        "WITH chicago_orders AS (\n  SELECT o.order_id, o.placed_at, date_trunc('week', o.placed_at) AS week_start\n  FROM orders o\n  JOIN cities c ON o.city_id = c.city_id\n  WHERE c.city = 'Chicago'\n)\nSELECT week_start, COUNT(*) AS order_count\nFROM chicago_orders\nWHERE week_start >= date_trunc('week', current_date) - INTERVAL 2 WEEK\nGROUP BY week_start\nORDER BY week_start DESC",
+        "SELECT city_id FROM cities WHERE city = 'Chicago'",
+        "SELECT weather_date, condition, snow_inches, temp_f\nFROM weather_daily wd\nJOIN cities c ON wd.city_id = c.city_id\nWHERE c.city = 'Chicago'\n  AND weather_date BETWEEN '2026-10-12' AND '2026-10-18'\nORDER BY weather_date",
+        "WITH week_orders AS (\n  SELECT o.order_id, o.status, o.cancel_reason, date_trunc('week', o.placed_at) AS week_start\n  FROM orders o\n  JOIN cities c ON o.city_id = c.city_id\n  WHERE c.city = 'Chicago'\n    AND date_trunc('week', o.placed_at) >= date_trunc('week', current_date) - INTERVAL 2 WEEK\n)\nSELECT week_start,\n       COUNT(*) AS total_orders,\n       SUM(CASE WHEN status = 'canceled' THEN 1 ELSE 0 END) AS canceled,\n       SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) AS delivered\nFROM week_orders\nGROUP BY week_start\nORDER BY week_start DESC",
+        "WITH week_restaurants AS (\n  SELECT date_trunc('week', o.placed_at) AS week_start, o.restaurant_id\n  FROM orders o\n  JOIN cities c ON o.city_id = c.city_id\n  WHERE c.city = 'Chicago'\n    AND date_trunc('week', o.placed_at) >= date_trunc('week', current_date) - INTERVAL 2 WEEK\n  GROUP BY week_start, o.restaurant_id\n)\nSELECT week_start, COUNT(DISTINCT restaurant_id) AS restaurants_count\nFROM week_restaurants\nGROUP BY week_start\nORDER BY week_start DESC",
+        "WITH week_orders AS (\n  SELECT o.order_id, o.status, date_trunc('week', o.placed_at) AS week_start\n  FROM orders o\n  JOIN cities c ON o.city_id = c.city_id\n  WHERE c.city = 'Chicago'\n    AND date_trunc('week', o.placed_at) >= date_trunc('week', current_date) - INTERVAL 2 WEEK\n)\nSELECT week_start, status, COUNT(*) AS cnt\nFROM week_orders\nGROUP BY week_start, status\nORDER BY week_start DESC, cnt DESC",
+        "WITH week_cancel AS (\n  SELECT o.cancel_reason, date_trunc('week', o.placed_at) AS week_start\n  FROM orders o\n  JOIN cities c ON o.city_id = c.city_id\n  WHERE c.city = 'Chicago'\n    AND o.status = 'cancelled'\n    AND date_trunc('week', o.placed_at) >= date_trunc('week', current_date) - INTERVAL 2 WEEK\n)\nSELECT week_start, cancel_reason, COUNT(*) AS cnt\nFROM week_cancel\nGROUP BY week_start, cancel_reason\nORDER BY week_start DESC, cnt DESC"
+      ],
+      "errors": []
+    },
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/168528678843139/run/948478237975997",
+    "seconds": 129
+  },
+  "02ctx": {
+    "run_id": 163928637580951,
+    "result_state": "SUCCESS",
+    "message": "",
+    "error": null,
+    "exit": {
+      "question": "What was revenue last month?",
+      "use_context": true,
+      "answer": "",
+      "tools_called": [
+        "list_tables",
+        "describe_table"
+      ],
+      "sql": [],
+      "errors": []
+    },
+    "url": "https://dbc-1b7422b2-c5a1.cloud.databricks.com/?o=7474656502522716#job/256045672298074/run/163928637580951",
+    "seconds": 170
+  }
+}

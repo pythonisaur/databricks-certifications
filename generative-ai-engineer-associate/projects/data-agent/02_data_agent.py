@@ -23,10 +23,11 @@
 
 dbutils.widgets.text("catalog", "food_delivery")
 dbutils.widgets.text("schema", "main")
-dbutils.widgets.text("llm_endpoint", "databricks-claude-sonnet-4-5")
+dbutils.widgets.text("llm_endpoint", "databricks-gpt-oss-120b")
 dbutils.widgets.text("today", "2026-10-27")
 dbutils.widgets.dropdown("use_context", "false", ["false", "true"])
 dbutils.widgets.text("question", "Why did our order volume in Chicago drop last week?")
+dbutils.widgets.dropdown("exit_when_done", "true", ["true", "false"])   # 03 sets false before %run
 
 CATALOG, SCHEMA = dbutils.widgets.get("catalog"), dbutils.widgets.get("schema")
 ENDPOINT, TODAY = dbutils.widgets.get("llm_endpoint"), dbutils.widgets.get("today")
@@ -36,7 +37,16 @@ spark.sql(f"USE {CATALOG}.{SCHEMA}")
 
 import json, re, time
 from databricks.sdk import WorkspaceClient
-client = WorkspaceClient().serving_endpoints.get_open_ai_client()
+_w = WorkspaceClient()
+
+def chat(messages, tools=None, max_tokens=800):
+    """Call a Foundation Model API chat endpoint (OpenAI wire format) without the openai package."""
+    body = {"messages": messages, "max_tokens": max_tokens}
+    if tools:
+        body["tools"] = tools
+    choice = _w.api_client.do("POST", f"/serving-endpoints/{ENDPOINT}/invocations", body=body)["choices"][0]
+    msg = choice["message"]; msg["finish_reason"] = choice.get("finish_reason")
+    return msg
 
 # COMMAND ----------
 
@@ -152,21 +162,32 @@ def box(kind, text, width=100):
     print(f"\033[{colour}m└" + "─" * width + "\033[0m")
 
 
-def run_agent(question, max_steps=12, verbose=True):
+def run_agent(question, max_steps=14, verbose=True):
     messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": question}]
-    trace = []
+    trace, nudges = [], 0
     for step in range(max_steps):
-        resp = client.chat.completions.create(model=ENDPOINT, messages=messages, tools=TOOLS, max_tokens=1200)
-        msg = resp.choices[0].message
-        if not msg.tool_calls:                               # plain text = final answer
-            if verbose:
-                box("ANSWER", msg.content)
-            return msg.content, trace
-        messages.append({"role": "assistant", "content": msg.content or "", "tool_calls": [tc.model_dump() for tc in msg.tool_calls]})
-        if msg.content and verbose:
-            box("PLAN", msg.content)
-        for tc in msg.tool_calls:
-            name, args = tc.function.name, json.loads(tc.function.arguments or "{}")
+        msg = chat(messages, tools=TOOLS, max_tokens=4000)          # reasoning models spend tokens before answering
+        tool_calls = msg.get("tool_calls") or []
+        thinking = msg.get("reasoning_content") or msg.get("reasoning")
+        if thinking and verbose:
+            box("PLAN", thinking)
+        if not tool_calls:
+            if msg.get("content"):                               # plain text = final answer
+                if verbose:
+                    box("ANSWER", msg["content"])
+                return msg["content"], trace
+            nudges += 1                                          # empty turn (e.g. finish_reason=length): push once more
+            trace.append({"step": step, "tool": "(empty turn)", "args": {"finish_reason": msg.get("finish_reason")}, "result": ""})
+            if nudges > 3:
+                break
+            messages.append({"role": "assistant", "content": ""})
+            messages.append({"role": "user", "content": "Your last message was empty. Continue: call a tool, or write the final answer now."})
+            continue
+        messages.append({"role": "assistant", "content": msg.get("content") or "", "tool_calls": tool_calls})
+        if msg.get("content") and verbose:
+            box("PLAN", msg["content"])
+        for tc in tool_calls:
+            name, args = tc["function"]["name"], json.loads(tc["function"].get("arguments") or "{}")
             kind = {"list_tables": "LOOK", "describe_table": "LOOK", "get_business_definitions": "LOOK", "execute_sql": "RUN"}[name]
             if name == "execute_sql" and verbose:
                 box("WRITE", args["sql"])
@@ -174,12 +195,15 @@ def run_agent(question, max_steps=12, verbose=True):
             if verbose:
                 box("CHECK" if result.startswith("error") else kind, result)
             trace.append({"step": step, "tool": name, "args": args, "result": result[:2000]})
-            messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
+            messages.append({"role": "tool", "tool_call_id": tc["id"], "content": result})
     return "(stopped: too many steps)", trace
 
 
 print(f"Data agent · {'business context ON' if USE_CONTEXT else 'raw tables only'} · today = {TODAY}\n")
-answer, trace = run_agent(QUESTION)
+if globals().get("CALLED_FROM_03"):                      # 03 only wants the functions, not a run
+    answer, trace = "", []
+else:
+    answer, trace = run_agent(QUESTION)
 
 # COMMAND ----------
 
@@ -198,3 +222,12 @@ answer, trace = run_agent(QUESTION)
 # MAGIC > Read-only is enforced in code and in Unity Catalog grants, not in the
 # MAGIC > prompt. The retry on an SQL error is the "reflection" step the exam
 # MAGIC > likes to name.
+
+# COMMAND ----------
+
+# job-friendly exit value; 03_right_and_wrong runs this notebook with exit_when_done=false
+if dbutils.widgets.get("exit_when_done") == "true" and not globals().get("CALLED_FROM_03"):
+    dbutils.notebook.exit(json.dumps({"question": QUESTION, "use_context": USE_CONTEXT, "answer": answer,
+                                  "tools_called": [t["tool"] for t in trace],
+                                  "sql": [t["args"].get("sql") for t in trace if t["tool"] == "execute_sql"],
+                                      "errors": [t["result"][:200] for t in trace if t["result"].startswith("error")]}))

@@ -1,4 +1,4 @@
-# 🎓 databricks-certifications
+# 🎓 databricks-certifications code base
 
 Study notes, practice material, and exam-prep resources for the **Databricks certification** tracks — organized one folder per exam.
 

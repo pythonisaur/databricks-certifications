@@ -36,6 +36,12 @@ model size → fine-tuning), **measure against a fixed eval set before and
 after every change**, and **controls sit at the stage where they can't be
 bypassed** (PII at ingestion, guardrails at the Gateway, permissions in UC).
 
+## Projects
+
+- [projects/data-agent/](projects/data-agent/) — build a read-only SQL agent
+  over a fake US food-delivery warehouse (sections 03, 05, 06); four
+  notebooks, also the demo behind the Emma on Data data-agent video.
+
 ## Practice
 
 - 🎯 [Timed practice exams on TestHub](https://testlogichub.com)

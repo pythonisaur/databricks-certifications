@@ -15,7 +15,7 @@ Sister repo to [**lakehouse-starter**](https://github.com/byambaa1982/lakehouse-
 | [`machine-learning-professional/`](machine-learning-professional/) | [Machine Learning Professional](https://www.databricks.com/learn/certification/machine-learning-professional) | 📚 Studying |
 | [`generative-ai-engineer-associate/`](generative-ai-engineer-associate/) | [Generative AI Engineer Associate](https://www.databricks.com/learn/certification/genai-engineer-associate) | 📚 Studying |
 | [`apache-spark-developer-associate/`](apache-spark-developer-associate/) | [Associate Developer for Apache Spark](https://www.databricks.com/learn/certification/apache-spark-developer-associate) | 📚 Studying |
-| [`videos/`](videos/) | Companion notebooks for the [Emma on Data](https://www.youtube.com/@emmaondata) videos, one per video, exported from the exact cells shown | 🎬 Growing |
+| [`videos/`](videos/) | Index of the companion notebooks for the [Emma on Data](https://www.youtube.com/@emmaondata) videos; GenAI lesson notebooks sit inside their track's section folders | 🎬 Growing |
 | [`resources/`](resources/) | Cross-exam material: the [cheat sheet](resources/cross-exam-cheat-sheet.md), [lab environments map](resources/lab-environments.md), [exam-day notes](resources/exam-day-notes.md) | — |
 
 Every certification folder follows the same shape:

@@ -36,6 +36,16 @@ model size → fine-tuning), **measure against a fixed eval set before and
 after every change**, and **controls sit at the stage where they can't be
 bypassed** (PII at ingestion, guardrails at the Gateway, permissions in UC).
 
+## Video lessons (Emma on Data)
+
+One companion notebook per lesson, stored in the section folder it proves as `lessonNN_<slug>.py`,
+runnable top to bottom on serverless / Free Edition:
+
+| Lesson | Notebook | Video |
+|---|---|---|
+| 01 The LCEL pipe | [`04-assembling-and-deploying/lesson01_lcel_pipe_chain.py`](04-assembling-and-deploying/lesson01_lcel_pipe_chain.py) | [watch](https://www.youtube.com/watch?v=WqBvH1UEC2Y) |
+| 02 RAG in one chain: retriever, passthrough, parallel | [`03-application-development/lesson02_rag_in_one_chain.py`](03-application-development/lesson02_rag_in_one_chain.py) | coming |
+
 ## Projects
 
 - [projects/data-agent/](projects/data-agent/) — build a read-only SQL agent

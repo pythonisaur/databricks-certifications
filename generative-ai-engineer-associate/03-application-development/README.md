@@ -18,6 +18,7 @@ the failure-handling code every production chain wraps around model calls.
 | [`01_building_rag_and_agents.py`](01_building_rag_and_agents.py) | The full chain runnable with a stub retriever, the prompt-contract table, the LCEL pipeline to recognize, multi-turn history policies and query rewriting |
 | [`02_agents_and_tools.py`](02_agents_and_tools.py) | The function-calling protocol and agent loop executed deterministically, tool-description and `role:"tool"` traps, UC function tools with `UCFunctionToolkit`, supervisor/pipeline/agent-as-tool patterns |
 | [`03_quality_knobs_and_guardrails.py`](03_quality_knobs_and_guardrails.py) | The triage table + escalation order, a runnable regex guard inside the four-layer model, indirect injection via retrieved docs, retries/validation/fallbacks/idempotent tools |
+| [`lesson02_rag_in_one_chain.py`](lesson02_rag_in_one_chain.py) | **Video lesson 02** (Emma on Data): the RAG chain as one LCEL expression, `{"context": retriever, "question": RunnablePassthrough()} \| prompt \| llm \| parser`; the three wrong shapes run and fail with their real errors; `format_docs`, `itemgetter`, `RunnablePassthrough.assign` |
 
 ## How to study
 

@@ -14,6 +14,7 @@ batch inference, and MCP.
 | Notebook | What you practice |
 |---|---|
 | [`01_vector_search_and_deployment.py`](01_vector_search_and_deployment.py) | The endpoint/index object model, the three index decisions, the full query API surface, k as a budget, the symptom → cause troubleshooting table |
+| [`lesson01_lcel_pipe_chain.py`](lesson01_lcel_pipe_chain.py) | **Video lesson 01** ([watch](https://www.youtube.com/watch?v=WqBvH1UEC2Y)): `prompt \| llm \| StrOutputParser()` on a Foundation Model endpoint, and why `+`, `LLMChain` and `StrOutputParser(prompt, llm)` are not LCEL |
 | [`02_logging_registering_serving.py`](02_logging_registering_serving.py) | `chain.py` + `set_model` + `log_model(resources=[...])`, register/alias/`agents.deploy`, Review App and inference tables, Prompt Registry versioning, `ai_query` and the `ai_*` functions, managed MCP servers |
 
 ## How to study

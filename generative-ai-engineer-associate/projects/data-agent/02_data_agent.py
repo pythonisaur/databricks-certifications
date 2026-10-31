@@ -154,12 +154,16 @@ else:
 
 # COMMAND ----------
 
-def box(kind, text, width=100):
+import textwrap
+
+def box(kind, text, width=110):
+    """Coloured trace box (ANSI). Long lines wrap instead of truncating so the ANSWER reads in full on screen."""
     colour = {"PLAN": "33", "LOOK": "36", "WRITE": "35", "RUN": "32", "CHECK": "31", "ANSWER": "1"}[kind]
-    print(f"\033[{colour}m┌─ {kind} " + "─" * (width - len(kind) - 4) + "\033[0m")
-    for line in str(text).splitlines()[:40]:
-        print(f"\033[{colour}m│\033[0m {line[:width]}")
-    print(f"\033[{colour}m└" + "─" * width + "\033[0m")
+    print(f"\033[{colour}m\u250c\u2500 {kind} " + "\u2500" * (width - len(kind) - 4) + "\033[0m")
+    lines = [w for raw in str(text).splitlines() for w in (textwrap.wrap(raw, width) or [""])]
+    for line in lines[:60]:
+        print(f"\033[{colour}m\u2502\033[0m {line}")
+    print(f"\033[{colour}m\u2514" + "\u2500" * width + "\033[0m")
 
 
 def run_agent(question, max_steps=14, verbose=True):

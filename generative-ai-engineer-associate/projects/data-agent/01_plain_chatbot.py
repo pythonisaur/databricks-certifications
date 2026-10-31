@@ -36,7 +36,8 @@ msg = chat([
 ], max_tokens=400)
 answer = msg["content"]
 print(f"Q: {QUESTION}\n")
-print(answer)
+import textwrap
+print("\n".join(textwrap.fill(p, 110) if p.strip() else "" for p in answer.splitlines()))   # wrapped for the screen
 
 # COMMAND ----------
 

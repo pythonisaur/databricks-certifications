@@ -112,7 +112,7 @@ display(spark.createDataFrame(scorecard[["context", "question", "verdict", "sql_
 # COMMAND ----------
 
 import json
-dbutils.notebook.exit(json.dumps(results))
+dbutils.notebook.exit(json.dumps(results, ensure_ascii=False))
 
 # COMMAND ----------
 

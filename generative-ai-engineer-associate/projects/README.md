@@ -51,7 +51,7 @@ Two ways to build the warehouse:
 Then `01`, `02` (flip the `use_context` widget), `03` for the scorecard. From the laptop:
 
 ```bash
-databricks workspace import-dir data-agent /Users/byambaa1982@gmail.com/databricks-certifications/genai/projects/data-agent --overwrite
+databricks workspace import-dir data-agent /Users/<your-email>/databricks-certifications/genai/projects/data-agent --overwrite
 python run_in_workspace.py --profile lakehouse            # 4 serverless runs: 01, 02 raw, 02 context, 03; exit values -> runs/<ts>.json
 python run_in_workspace.py --only 03                      # just the scorecard
 ```

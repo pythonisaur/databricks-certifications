@@ -26,8 +26,8 @@
 # MAGIC * **C** `{"context": retriever} | prompt | llm | StrOutputParser()`
 # MAGIC * **D** `prompt | retriever | llm | StrOutputParser()`
 # MAGIC
-# MAGIC Every option is run below. Three of them fail with the real error; the one that works is the one
-# MAGIC whose first step produces a **dict with both keys the prompt asks for**.
+# MAGIC The correct chain (B) is built and explained first. Then the three wrong options are run, each to its
+# MAGIC real error, with one line on why.
 
 # COMMAND ----------
 
@@ -49,20 +49,19 @@ EMBED_ENDPOINT = dbutils.widgets.get("EMBED_ENDPOINT")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 1. The four pieces, one at a time
+# MAGIC ## 1. Setup: a small corpus, a retriever, a prompt with two slots
 # MAGIC
-# MAGIC A retriever, a prompt, a chat model and a parser. The whole lesson is about **what type each one
-# MAGIC hands to the next**, so every piece is invoked alone first.
+# MAGIC Six lines of a made-up support handbook become Documents, an embedding endpoint turns them into vectors
+# MAGIC in an in-memory store, and the store gives us a retriever. In production the store is a Vector Search
+# MAGIC index (`DatabricksVectorSearch(...).as_retriever()`); the chain below does not change.
 
 # COMMAND ----------
 
-# DBTITLE 1,A tiny corpus and a retriever
+# DBTITLE 1,Documents, embeddings, retriever
 from langchain_core.documents import Document
 from langchain_core.vectorstores import InMemoryVectorStore
 from databricks_langchain import DatabricksEmbeddings
 
-# Six lines from a made-up food-delivery support handbook. The model has never seen them,
-# so a correct answer can only come from the context we put in the prompt.
 HANDBOOK = [
     "Refund policy: a cold-food complaint is refunded in full if it is filed within 14 days of delivery.",
     "Driver tips are capped at 25 dollars per order and are paid out to the driver every Friday.",
@@ -73,25 +72,15 @@ HANDBOOK = [
 ]
 docs = [Document(page_content=t, metadata={"source": f"handbook#{i+1}"}) for i, t in enumerate(HANDBOOK)]
 
-# In production the store is a Vector Search index: DatabricksVectorSearch(index_name=...).as_retriever()
-# The chain below does not change; only this line does.
 vectorstore = InMemoryVectorStore.from_documents(docs, embedding=DatabricksEmbeddings(endpoint=EMBED_ENDPOINT))
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
 # COMMAND ----------
 
-# DBTITLE 1,A retriever takes a string and returns a list of Documents
-question = "How long does a customer have to file a cold-food refund?"
-
-hits = retriever.invoke(question)
-print(type(hits).__name__, "of", len(hits), type(hits[0]).__name__)
-for d in hits:
-    print(" -", d.metadata["source"], "|", d.page_content)
-
-# COMMAND ----------
-
-# DBTITLE 1,A prompt takes a dict and wants exactly these keys
+# DBTITLE 1,A prompt with two slots, the model and the parser from lesson 01
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from databricks_langchain import ChatDatabricks
 
 prompt = ChatPromptTemplate.from_template(
     "Answer the question using only the context below. "
@@ -99,115 +88,56 @@ prompt = ChatPromptTemplate.from_template(
     "Context:\n{context}\n\n"
     "Question: {question}"
 )
+llm = ChatDatabricks(endpoint=ENDPOINT, temperature=0)
+parser = StrOutputParser()
+
 print(prompt.input_variables)
 
 # COMMAND ----------
 
-# DBTITLE 1,The model and the parser, same as lesson 01
-from langchain_core.output_parsers import StrOutputParser
-from databricks_langchain import ChatDatabricks
-
-llm = ChatDatabricks(endpoint=ENDPOINT, temperature=0)
-parser = StrOutputParser()
-
-# COMMAND ----------
-
 # MAGIC %md
-# MAGIC ## 2. Option A: `retriever | prompt | llm | parser`
+# MAGIC ## 2. The chain (option B): a dict with both keys, then the pipe from lesson 01
 # MAGIC
-# MAGIC The pipe hands **the retriever's output** to the prompt. That output is a list of Documents,
-# MAGIC and the question string is gone: nothing carried it past the retriever.
+# MAGIC The prompt needs `{"context": ..., "question": ...}` but the chain receives one string. The first step
+# MAGIC is a dict of runnables: **every value receives the same input**, the retriever fills `context` with the
+# MAGIC closest documents, and `RunnablePassthrough()` fills `question` with the input itself, unchanged.
 
 # COMMAND ----------
 
-chain_a = retriever | prompt | llm | parser
-try:
-    chain_a.invoke(question)
-except Exception as e:
-    print(type(e).__name__, "->", e)
+# DBTITLE 1,The correct chain, run first
+from langchain_core.runnables import RunnablePassthrough
+
+question = "How long does a customer have to file a cold-food refund?"
+
+chain = {"context": retriever, "question": RunnablePassthrough()} | prompt | llm | parser
+chain.invoke(question)
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC ## 3. The fix is a dict: RunnableParallel + RunnablePassthrough
-# MAGIC
-# MAGIC The prompt needs `{"context": ..., "question": ...}`. A dict of runnables builds exactly that:
-# MAGIC **every value receives the same input** (the question string), runs in parallel, and the results
-# MAGIC land under their keys. `RunnablePassthrough()` is the value that returns its input unchanged,
-# MAGIC so the question survives into the prompt.
+# DBTITLE 1,What the first step produces: the dict the prompt receives
+from langchain_core.runnables import RunnableParallel
 
-# COMMAND ----------
-
-# DBTITLE 1,The dict that flows through
-from langchain_core.runnables import RunnableParallel, RunnablePassthrough
-
-augment = RunnableParallel(context=retriever, question=RunnablePassthrough())
-
-flowing = augment.invoke(question)
+flowing = RunnableParallel(context=retriever, question=RunnablePassthrough()).invoke(question)
 print(type(flowing).__name__, list(flowing))
 print("question ->", flowing["question"])
 print("context  ->", type(flowing["context"]).__name__, "of", len(flowing["context"]), "Documents")
+print("first step of the chain ->", type(chain.first).__name__)
 
 # COMMAND ----------
 
-# DBTITLE 1,Option B: the dict, then the pipe from lesson 01
-chain_b = {"context": retriever, "question": RunnablePassthrough()} | prompt | llm | parser
-chain_b.invoke(question)
+# DBTITLE 1,The retriever alone: a string in, a list of Documents out
+for d in retriever.invoke(question):
+    print(" -", d.metadata["source"], "|", d.page_content)
 
 # COMMAND ----------
 
-# DBTITLE 1,Inside a chain the plain dict became a RunnableParallel
-print(type(chain_b.first).__name__)
-chain_b.get_graph().print_ascii()
-
-# COMMAND ----------
-
-# DBTITLE 1,Three spellings, one object
-from langchain_core.runnables import RunnableLambda
-
-same_1 = {"context": retriever, "question": RunnablePassthrough()} | prompt
-same_2 = RunnableParallel({"context": retriever, "question": RunnablePassthrough()}) | prompt
-same_3 = RunnableParallel(context=retriever, question=RunnablePassthrough()) | prompt
-
-print(type(same_1.first).__name__, type(same_2.first).__name__, type(same_3.first).__name__)
-print(same_1.first.steps__.keys() == same_2.first.steps__.keys() == same_3.first.steps__.keys())
+# DBTITLE 1,The chain drawn: the two branches before the prompt
+chain.get_graph().print_ascii()
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 4. Option C: `{"context": retriever} | prompt | llm | parser`
-# MAGIC
-# MAGIC Half the fix. The dict is built, but without a passthrough the question never reaches the prompt.
-
-# COMMAND ----------
-
-chain_c = {"context": retriever} | prompt | llm | parser
-try:
-    chain_c.invoke(question)
-except Exception as e:
-    print(type(e).__name__, "->", e)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## 5. Option D: `prompt | retriever | llm | parser`
-# MAGIC
-# MAGIC The order is backwards. The prompt runs first, and nothing has retrieved anything yet, so `context`
-# MAGIC is missing. (Invoked with the dict the prompt expects, to show the missing key rather than the
-# MAGIC mapping error from option A.)
-
-# COMMAND ----------
-
-chain_d = prompt | retriever | llm | parser
-try:
-    chain_d.invoke({"question": question})
-except Exception as e:
-    print(type(e).__name__, "->", e)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## 6. Does the context actually change the answer?
+# MAGIC ## 3. Does the context change the answer?
 # MAGIC
 # MAGIC Same model, same question, prompt without the handbook.
 
@@ -219,20 +149,60 @@ bare_prompt = ChatPromptTemplate.from_template(
 bare_chain = bare_prompt | llm | parser
 
 print("without context:", bare_chain.invoke({"question": question}))
-print("with context:   ", chain_b.invoke(question))
+print("with context:   ", chain.invoke(question))
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 7. Two refinements you will see in exam snippets
+# MAGIC ## 4. The three wrong options, each run to its real error
 # MAGIC
-# MAGIC **Format the documents.** The prompt above received the list of Documents and stringified it,
-# MAGIC `page_content='...' metadata={...}` and all. A small function between the retriever and the prompt
-# MAGIC turns the list into clean text. A plain function in a pipe is coerced to a `RunnableLambda`.
+# MAGIC | Option | What the prompt receives | Result |
+# MAGIC |---|---|---|
+# MAGIC | A `retriever \| prompt \| ...` | a list of Documents, question lost | `TypeError`: prompt expects a mapping |
+# MAGIC | C `{"context": retriever} \| prompt \| ...` | `{"context": [...]}` only | `KeyError`: missing `question` |
+# MAGIC | D `prompt \| retriever \| ...` | `{"question": "..."}` before any retrieval | `KeyError`: missing `context` |
+
+# COMMAND ----------
+
+# DBTITLE 1,Option A: the retriever piped straight into the prompt
+chain_a = retriever | prompt | llm | parser
+try:
+    chain_a.invoke(question)
+except Exception as e:
+    print(type(e).__name__, "->", e)
+
+# COMMAND ----------
+
+# DBTITLE 1,Option C: the dict without the passthrough
+chain_c = {"context": retriever} | prompt | llm | parser
+try:
+    chain_c.invoke(question)
+except Exception as e:
+    print(type(e).__name__, "->", e)
+
+# COMMAND ----------
+
+# DBTITLE 1,Option D: the prompt before the retriever (invoked with the dict it expects)
+chain_d = prompt | retriever | llm | parser
+try:
+    chain_d.invoke({"question": question})
+except Exception as e:
+    print(type(e).__name__, "->", e)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## 5. Three refinements you will see in exam snippets
 # MAGIC
-# MAGIC **Pick keys with `itemgetter`.** When the chain's input is a dict instead of a bare string
-# MAGIC (a question plus a language, a user id, chat history), each branch chooses the key it needs
-# MAGIC and `RunnablePassthrough()` is replaced by `itemgetter("question")`.
+# MAGIC **Format the documents.** The prompt above received the list of Documents and stringified it. A small
+# MAGIC function between the retriever and the prompt turns the list into clean text; a plain function in a pipe
+# MAGIC is coerced to a `RunnableLambda`.
+# MAGIC
+# MAGIC **Pick keys with `itemgetter`.** When the chain's input is a dict instead of a bare string (a question
+# MAGIC plus a language, a user id, chat history), each branch chooses the key it needs and `RunnablePassthrough()`
+# MAGIC becomes `itemgetter("question")`.
+# MAGIC
+# MAGIC **`RunnablePassthrough.assign`** keeps the whole input dict and adds `context` to it.
 
 # COMMAND ----------
 
@@ -240,10 +210,7 @@ print("with context:   ", chain_b.invoke(question))
 def format_docs(found: list[Document]) -> str:
     return "\n".join(f"[{d.metadata['source']}] {d.page_content}" for d in found)
 
-augment_clean = RunnableParallel(context=retriever | format_docs, question=RunnablePassthrough())
-print(augment_clean.invoke(question)["context"])
-
-rag_chain = augment_clean | prompt | llm | parser
+rag_chain = {"context": retriever | format_docs, "question": RunnablePassthrough()} | prompt | llm | parser
 rag_chain.invoke("What is the tip cap for a driver?")
 
 # COMMAND ----------
@@ -255,7 +222,6 @@ prompt_lang = ChatPromptTemplate.from_template(
     "Answer the question using only the context below, in {language}.\n\n"
     "Context:\n{context}\n\nQuestion: {question}"
 )
-
 chain_dict_in = (
     {
         "context":  itemgetter("question") | retriever | format_docs,
@@ -269,8 +235,6 @@ chain_dict_in.invoke({"question": "When is free delivery applied?", "language": 
 # COMMAND ----------
 
 # DBTITLE 1,RunnablePassthrough.assign keeps the whole input and adds a key
-# Same idea as the dict, written as "take what came in and add context to it".
-# Input dict -> output dict with every original key plus "context".
 chain_assign = (
     RunnablePassthrough.assign(context=itemgetter("question") | retriever | format_docs)
     | prompt | llm | parser
@@ -280,18 +244,9 @@ chain_assign.invoke({"question": "Can two promo codes be combined?"})
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 8. Back to the question
+# MAGIC ## 6. The rule to memorise
 # MAGIC
-# MAGIC | Option | What the prompt received | Result |
-# MAGIC |---|---|---|
-# MAGIC | A `retriever \| prompt \| ...` | a list of Documents, question lost | `TypeError`: prompt expects a mapping |
-# MAGIC | **B** `{"context": retriever, "question": RunnablePassthrough()} \| prompt \| ...` | `{"context": [...], "question": "..."}` | **the grounded answer** |
-# MAGIC | C `{"context": retriever} \| prompt \| ...` | `{"context": [...]}` only | `KeyError`: missing `question` |
-# MAGIC | D `prompt \| retriever \| ...` | `{"question": "..."}` before any retrieval | `KeyError`: missing `context` |
-# MAGIC
-# MAGIC **The rule to memorise:** the step before the prompt must output a dict with every variable the
-# MAGIC prompt declares. A dict of runnables (`RunnableParallel`) builds it; `RunnablePassthrough()` is how
-# MAGIC the user's input survives into one of its keys.
-# MAGIC
-# MAGIC Next: lesson 03, chunking (how many pieces, how big). The retriever used here goes to a Vector
-# MAGIC Search index in lesson 06.
+# MAGIC The step before the prompt must output a dict with every variable the prompt declares. A dict of
+# MAGIC runnables (`RunnableParallel`) builds it; `RunnablePassthrough()` is how the user's input survives into
+# MAGIC one of its keys. Next: lesson 03, chunking (how many pieces, how big). The retriever used here goes to a
+# MAGIC Vector Search index in lesson 06.

@@ -6,7 +6,7 @@ section weight. 45 scored questions, 90 minutes.
 
 | # | Section | Weight | Notebooks |
 |---|---------|--------|-----------|
-| 01 | [Design Applications](01-design-applications/) | 14% | 2 |
+| 01 | [Design Applications](01-design-applications/) | 14% | 4 |
 | 02 | [Data Preparation](02-data-preparation/) | 14% | 2 |
 | 03 | [Application Development](03-application-development/) | 30% | 3 |
 | 04 | [Assembling and Deploying Applications](04-assembling-and-deploying/) | 22% | 2 |

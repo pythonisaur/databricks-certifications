@@ -44,7 +44,8 @@ runnable top to bottom on serverless / Free Edition:
 | Lesson | Notebook | Video |
 |---|---|---|
 | 01 The LCEL pipe | [`04-assembling-and-deploying/lesson01_lcel_pipe_chain.py`](04-assembling-and-deploying/lesson01_lcel_pipe_chain.py) | [watch](https://www.youtube.com/watch?v=WqBvH1UEC2Y) |
-| 02 RAG in one chain: retriever, passthrough, parallel | [`03-application-development/lesson02_rag_in_one_chain.py`](03-application-development/lesson02_rag_in_one_chain.py) | coming |
+| 02 RAG in one chain: retriever, passthrough, parallel | [`03-application-development/lesson02_rag_in_one_chain.py`](03-application-development/lesson02_rag_in_one_chain.py) | [watch](https://www.youtube.com/watch?v=-EPvAzgJ_OQ) |
+| 03 Chunking decides the record count (sample question 1) | [`02-data-preparation/lesson03_chunking_record_count.py`](02-data-preparation/lesson03_chunking_record_count.py) | coming |
 
 ## Projects
 

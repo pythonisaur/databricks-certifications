@@ -17,6 +17,7 @@ rules.
 |---|---|
 | [`01_chunking_and_retrieval_prep.py`](01_chunking_and_retrieval_prep.py) | Extraction per source type, both chunkers run side by side, the size trade-offs and the embedding-input-limit truncation trap, parent-document retrieval, Delta + CDF landing |
 | [`02_retrieval_evaluation.py`](02_retrieval_evaluation.py) | Building an eval set, recall@k / precision@k / MRR / NDCG computed live, retrieval-vs-generation triage, re-ranker reasoning, hybrid search, embedding-model consistency |
+| [`lesson03_chunking_record_count.py`](lesson03_chunking_record_count.py) | Emma on Data lesson 03 (official sample question 1): chunk size and overlap run on a real document and projected to 150 million records; the two correct actions first, the three distractors in one table, the structure-aware splitter and the embedding context length as the limits |
 
 ## How to study
 

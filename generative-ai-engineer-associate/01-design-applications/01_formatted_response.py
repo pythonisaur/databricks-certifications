@@ -89,7 +89,6 @@ from databricks_langchain import ChatDatabricks
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-# "json" is spelled in lower case on purpose: the json_object option in section 3 requires that exact word in the messages.
 SYSTEM = ("You classify customer feedback for a food delivery company. Reply as a json object with the keys category, confidence and reason. "
           "category is one of delivery, food_quality, app, payment; confidence is a number from 0 to 1; reason is one sentence.")
 prompt = ChatPromptTemplate.from_messages([("system", SYSTEM), ("human", "{feedback}")])
@@ -176,9 +175,10 @@ report("A instructions only", outputs_a)
 # COMMAND ----------
 
 # DBTITLE 1,Option C: json_object guarantees JSON, not your JSON
-# json_object requires the lower-case word "json" somewhere in the messages (the request is rejected otherwise); the system prompt has it.
+# The endpoint rejects a json_object request unless the word "json" appears in the user message, so the human turn asks for it.
 llm_json = ChatDatabricks(endpoint=ENDPOINT, temperature=0, extra_params={"response_format": {"type": "json_object"}})
-chain_c = prompt | llm_json | StrOutputParser()
+prompt_c = ChatPromptTemplate.from_messages([("system", SYSTEM), ("human", "{feedback}\n\nReturn the json object.")])
+chain_c = prompt_c | llm_json | StrOutputParser()
 outputs_c = chain_c.batch(inputs, config=SEQ)
 report("C json_object", outputs_c)
 
@@ -186,8 +186,8 @@ report("C json_object", outputs_c)
 
 # DBTITLE 1,Option C with no keys named in the prompt: valid JSON, whatever keys the model likes
 prompt_nokeys = ChatPromptTemplate.from_messages([
-    ("system", "You classify customer feedback for a food delivery company. Reply as a json object."),
-    ("human", "{feedback}")])
+    ("system", "You classify customer feedback for a food delivery company."),
+    ("human", "{feedback}\n\nReturn a json object.")])
 for raw in (prompt_nokeys | llm_json | StrOutputParser()).batch(inputs[:4], config=SEQ):
     print(sorted(json.loads(raw).keys()), "|", raw[:80])
 

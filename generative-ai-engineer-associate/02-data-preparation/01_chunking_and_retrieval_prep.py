@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # 01 — Extraction and chunking
 # MAGIC
@@ -13,6 +17,7 @@ dbutils.widgets.text("catalog", "dev_catalog")  # noqa: F821
 dbutils.widgets.text("schema", "genai_assoc")  # noqa: F821
 CATALOG = dbutils.widgets.get("catalog")  # noqa: F821
 SCHEMA = dbutils.widgets.get("schema")  # noqa: F821
+spark.sql(f"CREATE CATALOG IF NOT EXISTS {CATALOG}")  # noqa: F821
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS {CATALOG}.{SCHEMA}")  # noqa: F821
 spark.sql(f"USE {CATALOG}.{SCHEMA}")  # noqa: F821
 

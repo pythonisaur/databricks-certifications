@@ -1,0 +1,77 @@
+name: Auto-merge question notebooks
+
+# Merges a `qnote/<key>` pull request (one tutorial notebook for one fixed
+# TestLogicHub exam question, opened by the daily routine) with no human step.
+#
+# Gate: tools/qnote_check.py — the diff adds exactly one notebook in the right
+# track/section folder and updates that section's README; the notebook is
+# Databricks source, compiles, carries QUESTION metadata whose stem hashes to
+# the key, follows the house style and contains no secrets or destructive
+# commands. Then the PR is squash-merged and its branch deleted. A failure
+# leaves the PR open with a comment pointing at the run.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: qnote-automerge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  gate-and-merge:
+    if: >-
+      startsWith(github.head_ref, 'qnote/') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ github.event.pull_request.number }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      HEAD_REF: ${{ github.head_ref }}
+    steps:
+      - name: Checkout (merge of PR onto main)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve key
+        id: key
+        run: |
+          key="${HEAD_REF#qnote/}"
+          [[ "$key" =~ ^[0-9a-f]{10}$ ]] || { echo "::error::branch '$HEAD_REF' is not qnote/<10-hex-key>"; exit 1; }
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+
+      - name: Gate — notebook, folder, metadata, style, safety
+        run: |
+          python tools/qnote_check.py --key "${{ steps.key.outputs.key }}" --base origin/main --head HEAD | tee gate.txt
+          { echo "### Gate"; echo '```'; cat gate.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Merge
+        run: |
+          gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR/merge" \
+            -f merge_method=squash -f sha="$HEAD_SHA" \
+            -f commit_title="$PR_TITLE (#$PR)" --jq '.message'
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$HEAD_REF" || echo "branch already gone"
+          gh pr comment "$PR" --body "Merged automatically after passing tools/qnote_check.py. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "Merged #$PR" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report failure on the PR
+        if: failure()
+        run: |
+          gh pr comment "$PR" --body "Auto-merge did not run through: see ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. The PR stays open for a human; push a fix to re-trigger."

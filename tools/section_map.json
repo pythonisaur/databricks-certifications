@@ -1,0 +1,62 @@
+{
+  "_comment": "TestLogicHub track id -> folder in this repo, and the exam_section value used in its question bank -> the section folder. Used by tools/qnote_check.py and the daily question-notebook routine.",
+  "gen_ai_ass": {
+    "folder": "generative-ai-engineer-associate",
+    "sections": {
+      "Design Applications": "01-design-applications",
+      "Data Preparation": "02-data-preparation",
+      "Application Development": "03-application-development",
+      "Assembling and Deploying Applications": "04-assembling-and-deploying",
+      "Governance": "05-governance",
+      "Evaluation and Monitoring": "06-evaluation-and-monitoring"
+    }
+  },
+  "de_pro": {
+    "folder": "data-engineer-professional",
+    "sections": {
+      "Developing Code for Data Processing using Python and SQL": "01-developing-code-for-data-processing",
+      "Data Ingestion & Acquisition": "02-data-ingestion-and-acquisition",
+      "Data Transformation, Cleansing, and Quality": "03-data-transformation-cleansing-and-quality",
+      "Data Sharing and Federation": "04-data-sharing-and-federation",
+      "Monitoring and Alerting": "05-monitoring-and-alerting",
+      "Cost & Performance Optimisation": "06-cost-and-performance-optimisation",
+      "Ensuring Data Security and Compliance": "07-data-security-and-compliance",
+      "Data Governance": "08-data-governance",
+      "Debugging and Deploying": "09-debugging-and-deploying",
+      "Data Modelling": "10-data-modelling"
+    }
+  },
+  "ml_eng_ass": {
+    "folder": "machine-learning-associate",
+    "sections": {
+      "Databricks Machine Learning": "01-databricks-machine-learning",
+      "Data Processing": "02-data-processing",
+      "Model Development": "03-model-development",
+      "Model Deployment": "04-model-deployment"
+    }
+  },
+  "de_associate": {
+    "folder": "data-engineer-associate",
+    "sections": {
+      "Databricks Intelligence Platform": "01-databricks-intelligence-platform",
+      "Development and Ingestion": "02-data-ingestion-and-loading",
+      "Data Processing & Transformations": "03-data-transformation-and-modeling",
+      "Productionizing Data Pipelines": "04-lakeflow-jobs",
+      "Data Governance & Quality": "07-governance-and-security"
+    }
+  },
+  "data_analyst": {
+    "folder": "data-analyst-associate",
+    "sections": {
+      "Understanding of Databricks Data Intelligence Platform": "01-data-intelligence-platform",
+      "Managing Data": "02-managing-data",
+      "Importing Data": "03-importing-data",
+      "Executing queries using Databricks SQL and Databricks SQL Warehouses": "04-executing-queries",
+      "Analyzing Queries": "05-analyzing-queries",
+      "Section 6: Working with Dashboards and Visualizations in Databricks": "06-dashboards-and-visualizations",
+      "Section 7: Developing, Sharing, and Maintaining AI/BI Genie spaces": "07-genie-spaces",
+      "Section 8: Data Modeling with Databricks SQL": "08-data-modeling",
+      "Securing Data": "09-securing-data"
+    }
+  }
+}

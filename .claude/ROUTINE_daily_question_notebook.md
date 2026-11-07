@@ -22,6 +22,14 @@ Where things are:
 Changelog:
 - 2026-11-07 created (disabled, placeholder prompt) while the workflow + gate were added; prompt stored and
   routine enabled the same day.
+- 2026-11-07 first manual run (session `cse_012BAukBgPmya7HjTxAibyLY`): picked 2da6c33fec (ml_eng_ass, log
+  transform), wrote a 29-cell notebook, gate passed, but `git push` was refused with HTTP 403: "Claude doesn't
+  have GitHub access to pythonisaur/databricks-certifications for your organization". **Owner step, once:**
+  install the Claude GitHub App on the `pythonisaur` org (https://github.com/apps/claude/installations/select_target)
+  or reconnect GitHub at https://claude.ai/customize/connectors. Until then every run ends with the same report
+  and no PR. Same run showed the gate's `py_compile` left a `__pycache__/` next to the notebook, which the
+  agent committed by mistake and the allowlist then rejected; the gate now compiles to a temp dir and the repo
+  gained a `.gitignore` for `__pycache__/`.
 
 The prompt as currently stored:
 

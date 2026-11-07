@@ -32,6 +32,7 @@ import py_compile
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
@@ -136,7 +137,10 @@ def check_notebook(path: Path, key: str, track_folder: str, section_folder: str)
     if not text.startswith("# Databricks notebook source\n"):
         fail("first line must be `# Databricks notebook source`")
     try:
-        py_compile.compile(str(path), doraise=True)
+        # cfile in a temp dir: never leave a __pycache__/ next to the notebook (it would
+        # land in the commit and fail the file allowlist).
+        with tempfile.TemporaryDirectory() as tmp:
+            py_compile.compile(str(path), cfile=str(Path(tmp) / "nb.pyc"), doraise=True)
     except py_compile.PyCompileError as e:
         fail(f"notebook does not compile as Python: {e.msg.strip().splitlines()[-1]}")
     cells = text.split(CELL_SEP)

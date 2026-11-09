@@ -15,6 +15,7 @@ different ways.
 | [`01_constraints_and_enforcement.py`](01_constraints_and_enforcement.py) | `NOT NULL`, `CHECK` (add-time full scan!), violations failing whole transactions live, PK/FK proven unenforced by inserting a duplicate key, `RELY`, where constraints live in TBLPROPERTIES |
 | [`02_deduplication_and_late_data.py`](02_deduplication_and_late_data.py) | Exact vs keyed dedup, `dropDuplicates` arbitrariness, insert-only MERGE (idempotent appends, re-run = 0 inserts), streaming dedup with watermark, `dropDuplicatesWithinWatermark`, watermark admission-vs-cleanup semantics |
 | [`03_expectations_and_quarantine.py`](03_expectations_and_quarantine.py) | Rules-as-a-dict quarantine pattern run live (split + per-rule counts), then the same rules as DLT `expect` / `expect_or_drop` / `expect_or_fail` with the policy table and event-log gotchas |
+| [`q_387cf01a44_autoloader_rescue_mode.py`](q_387cf01a44_autoloader_rescue_mode.py) | Exam question: Auto Loader that keeps running on new fields and type mismatches. `rescue` mode run live over two batches (nothing dropped, all in `_rescued_data`), then `badRecordsPath`, `addNewColumns` + deleted checkpoint (fail, restart, duplicates) and explicit schema + `addNewColumns` (rejected; nulls without it). Self-contained in `dev_catalog.de_pro_qnotes` |
 
 ## Setup
 

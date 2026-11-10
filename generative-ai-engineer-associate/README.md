@@ -11,7 +11,7 @@ section weight. 45 scored questions, 90 minutes.
 | 03 | [Application Development](03-application-development/) | 30% | 3 |
 | 04 | [Assembling and Deploying Applications](04-assembling-and-deploying/) | 22% | 2 |
 | 05 | [Governance](05-governance/) | 8% | 1 |
-| 06 | [Evaluation and Monitoring](06-evaluation-and-monitoring/) | 12% | 2 |
+| 06 | [Evaluation and Monitoring](06-evaluation-and-monitoring/) | 12% | 3 |
 
 Sections 03 + 04 are **52% of the exam**. LLM apps need endpoints to run
 fully, so the notebooks split their content deliberately: the **mechanics

@@ -17,6 +17,7 @@ real plans.
 | [`02_vacuum_and_storage.py`](02_vacuum_and_storage.py) | `DRY RUN`, the 7-day retention guard tripped and (deliberately) overridden, time travel proven broken while history survives, log vs file retention, predictive optimization |
 | [`03_query_tuning_aqe_and_caching.py`](03_query_tuning_aqe_and_caching.py) | Broadcast vs sort-merge read off `explain()`, AQE's three fixes (coalesce, dynamic strategy, skew), `shuffle.partitions = auto`, Spark cache vs disk cache, reading spill/skew in the Spark UI |
 | [`04_compute_and_cost.py`](04_compute_and_cost.py) | Job vs all-purpose vs serverless economics, Photon, spot, auto-termination, `system.billing.usage` joined to list prices (runs live if granted), tags → chargeback, the symptom → lever drill table |
+| [`q_ae1c6851d9_partition_pruning_cast.py`](q_ae1c6851d9_partition_pruning_cast.py) | Exam question: a partition filter that scans 800 of 1,000 files. The `PartitionFilters` of a DATE literal, a coerced string literal and a column-side `CAST` run first, then unregistered partition directories and `MSCK REPAIR TABLE` (stand-in catalog), then ZORDER on Parquet, AQE off, the missing `CartesianProduct` and `OPTIMIZE` with no transaction log, each on the same ~1,000 Parquet files |
 
 ## Setup
 

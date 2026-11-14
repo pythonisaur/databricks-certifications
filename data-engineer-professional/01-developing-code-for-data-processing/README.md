@@ -15,6 +15,7 @@ deployment, so you can mutate tables freely and reset anytime.
 | [`03_udfs_and_higher_order_functions.py`](03_udfs_and_higher_order_functions.py) | Built-in vs Python UDF vs pandas UDF (same logic 3 ways), SQL UDFs in Unity Catalog, `transform`/`filter`/`aggregate`/`exists` |
 | [`04_delta_dml_and_merge.py`](04_delta_dml_and_merge.py) | CDC dedup-then-MERGE, `WHEN NOT MATCHED BY SOURCE`, UPDATE/DELETE, DESCRIBE HISTORY, time travel, RESTORE, MERGE schema evolution |
 | [`05_structured_streaming.py`](05_structured_streaming.py) | Delta-to-Delta streams, checkpoint semantics (proved live), Auto Loader on the real raw volume, Change Data Feed, trigger cheat sheet |
+| [`q_63a961c4d4_streaming_vs_mv.py`](q_63a961c4d4_streaming_vs_mv.py) | Exam question: Streaming Tables vs Materialized Views for Silver and Gold. Three pipeline updates run first (an Auto Loader stand-in with a checkpoint processes 40, 0, then 30 new rows; a Materialized View stand-in recomputes Gold and re-files history after a `dim_stores` change), then a stale streaming Gold, MV aggregates and window functions, both stored as Delta, and AUTO CDC updates/deletes on a streaming target. Self-contained in `dev_catalog.de_pro_qnotes` |
 
 ## Setup
 

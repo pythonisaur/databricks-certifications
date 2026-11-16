@@ -14,6 +14,7 @@ SQL, discovery). Overlaps deliberately with 04 (sharing lives in UC) and 07
 | [`01_unity_catalog_object_model.py`](01_unity_catalog_object_model.py) | Metastore → catalog → schema hierarchy, managed vs external DROP/UNDROP semantics (checked live with `DESCRIBE EXTENDED`), storage credentials → external locations, volumes vs legacy mounts, `information_schema` queries |
 | [`02_lineage_tags_and_discovery.py`](02_lineage_tags_and_discovery.py) | `system.access.table_lineage` probed live, why path-based reads break lineage, column-level lineage for impact analysis, tags set/queried/unset live (the PII sweep), comments and certification |
 | [`q_76e3b91cf6_comments_and_tags.py`](q_76e3b91cf6_comments_and_tags.py) | Exam question on discoverability: `COMMENT` on schema/tables/columns plus `pii`/`layer` tags set live and searched through `information_schema` (option A, run first), then `TBLPROPERTIES`, a mapping table, name prefixes and a Marketplace listing stand-in each run to where they fall short |
+| [`q_f32f91c386_least_privilege_grants.py`](q_f32f91c386_least_privilege_grants.py) | Exam question on least-privilege grants across `bronze`/`silver`/`gold`: `USE CATALOG` plus schema-scoped `USE SCHEMA` + `SELECT` per principal (option D, run first) against a local model of the Unity Catalog privilege rules, then `SELECT` without traversal, catalog-wide `SELECT` with revokes that remove nothing, ownership as "read access" and one shared group, each audited to its real failure |
 
 ## Setup
 

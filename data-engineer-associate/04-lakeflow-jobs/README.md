@@ -14,6 +14,7 @@ live.
 |---|---|
 | [`01_tasks_dags_and_control_flow.py`](01_tasks_dags_and_control_flow.py) | Task types incl. if/else and for-each, `depends_on` + Run-if conditions (the "always run cleanup" answer), per-task retries vs repair runs, `dbutils.jobs.taskValues` live, job parameters vs task values, job compute choices |
 | [`02_scheduling_and_triggers.py`](02_scheduling_and_triggers.py) | The five triggers with their sweet spots, why clock-chaining dependent jobs is the canonical wrong answer, pause/resume, reading a job's bundle YAML, `system.lakeflow.job_run_timeline` probe |
+| [`q_e58476c849_asset_bundle_structure.py`](q_e58476c849_asset_bundle_structure.py) | Exam question on Asset Bundle structure: `databricks.yml` as the one required root file (name, targets, resources), five project trees put through stand-ins for `bundle validate` / `deploy` / `run`, and why workspace-path code, `requirements.txt`/`Makefile`, manifests and JSON specs are wrong |
 
 ## Setup
 

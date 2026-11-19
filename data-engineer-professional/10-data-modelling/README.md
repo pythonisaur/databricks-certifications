@@ -13,6 +13,7 @@ union-staging MERGE, the trickiest SQL in this repo.
 | [`01_medallion_and_star_schema.py`](01_medallion_and_star_schema.py) | The per-layer contract table (and which hop cleanses vs aggregates), `GENERATED ALWAYS AS IDENTITY` surrogate keys live (gaps, concurrency, ALWAYS vs BY DEFAULT), building a fact with an informational FK, when to denormalize, Data Vault in one paragraph |
 | [`02_scd_modelling.py`](02_scd_modelling.py) | The SCD type ladder, a change batch applied via the union-staging SCD2 MERGE with the metrics walked row by row, then the same thing as `dlt.apply_changes(stored_as_scd_type=2)` — the code that actually built `silver_customers` |
 | [`q_fafe65ac21_star_schema_layout.py`](q_fafe65ac21_star_schema_layout.py) | Exam question: lay out a 500 GB star-schema fact table. `CLUSTER BY (order_date, product_category)` plus broadcast dimensions run first, then the failing `PARTITIONED BY` + `CLUSTER BY`, high-cardinality partitioning with shuffle joins, and partitioned ZORDER, each measured on the same 600 orders |
+| [`q_e148d36611_zorder_partition_limit.py`](q_e148d36611_zorder_partition_limit.py) | Exam question: the key limitation of Z-order versus liquid clustering. The same 8,000 events Z-ordered inside `region` partitions (one region per file), Z-ordered unpartitioned, and liquid clustered run first, then ZORDER on a column without statistics fixed by `ALTER TABLE SET TBLPROPERTIES`, the DBR 15.2 version matrix, and ZORDER skipping on an unpartitioned table |
 
 ## Setup
 
